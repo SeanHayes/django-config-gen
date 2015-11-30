@@ -7,7 +7,12 @@ from django.core.management.base import NoArgsCommand, CommandError
 from django.conf import settings
 from django.template import Template, Context
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.importlib import import_module
+
+try:
+    from django.utils.importlib import import_module
+except ImportError:
+    from importlib import import_module
+
 from .. import patch_settings
 import os
 import shutil
@@ -26,12 +31,12 @@ CONTEXT_PROCESSORS = settings.CONFIG_GEN_CONTEXT_PROCESSORS
 class Command(NoArgsCommand):
 	help = 'Generates configuration files for Apache, Nginx, etc. using values in settings.py and the Django template system.'
 	ctx = None
-	
+
 	def handle_noargs(self, **options):
 		#get all templates in TEMPLATES_DIR, parse them, and output files in GENERATED_DIR
 		#logging.debug(settings)
 		self.ctx = Context(settings._wrapped.__dict__)
-		
+
 		#run context processors
 		for path in CONTEXT_PROCESSORS:
 			logger.debug('Processing Context Processor: %s' % path)
@@ -46,17 +51,17 @@ class Command(NoArgsCommand):
 				func = getattr(mod, attr)
 			except AttributeError:
 				raise ImproperlyConfigured('Module "%s" does not define a "%s" callable request processor' % (module, attr))
-			
+
 			d = func()
 			logger.debug(d)
 			self.ctx.update(d)
-		
+
 		if not os.path.exists(TEMPLATES_DIR):
 			os.makedirs(TEMPLATES_DIR)
-		
+
 		if not os.path.exists(GENERATED_DIR):
 			os.makedirs(GENERATED_DIR)
-		
+
 		dir_list=os.listdir(TEMPLATES_DIR)
 		#if no templates are present, populate template directory with the examples
 
@@ -66,7 +71,7 @@ class Command(NoArgsCommand):
 			for filename in os.listdir(example_dir):
 				shutil.copy2(os.path.join(example_dir, filename), TEMPLATES_DIR)
 			dir_list=os.listdir(TEMPLATES_DIR)
-		
+
 		logger.debug(self.ctx)
 		self.create_nodes(TEMPLATES_DIR)
 
@@ -74,12 +79,12 @@ class Command(NoArgsCommand):
 		fi = open(source, 'r')
 		t = Template(fi.read())
 		fi.close()
-		
+
 		fo = open(target, 'w')
 		generated_text = t.render(self.ctx).encode('utf-8')
 		fo.write(generated_text)
 		fo.close()
-	
+
 	def create_nodes(self, path):
 		for root, dirs, files in os.walk(path):
 			for dirname in dirs:
@@ -97,4 +102,4 @@ class Command(NoArgsCommand):
 				if not os.path.exists(dirname):
 					os.makedirs(dirname)
 				self.render_template(source, target)
-				
+
