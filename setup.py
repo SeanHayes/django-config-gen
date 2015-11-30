@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
 from setuptools import setup
 import django_config_gen
 
@@ -10,6 +11,15 @@ test_package_name = '%s_test_project' % package_name
 tests_require = [
     'django_nose',
 ]
+
+
+def get_packages(package):
+    """
+    Return root package and all sub-packages.
+    """
+    return [dirpath
+            for dirpath, dirnames, filenames in os.walk(package)
+            if os.path.exists(os.path.join(dirpath, '__init__.py'))]
 
 
 setup(name='django-config-gen',
@@ -37,10 +47,7 @@ setup(name='django-config-gen',
     url='http://seanhayes.name/',
     download_url='https://github.com/SeanHayes/django-config-gen',
     license='BSD',
-    packages=[
-        'django_config_gen',
-        'django_config_gen_test_project',
-    ],
+    packages=get_packages('django_config_gen'),
     package_data={'django_config_gen': ['management/commands/example_templates/*']},
     include_package_data=True,
     install_requires=['Django>=1.2',],

@@ -3,7 +3,7 @@
 #
 #Licensed under a BSD 3-Clause License. See LICENSE file.
 
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from .. import patch_settings
 import json
@@ -18,16 +18,16 @@ class NullHandler(logging.Handler):
 
 patch_settings()
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
 	help = 'Prints out settings serialized as JSON.'
-	
-	def handle_noargs(self, **options):
+
+	def handle(self, **options):
 		#remove logging statements from output
 		l = logging.getLogger('')
 		for h in l.handlers:
 			l.removeHandler(h)
 		l.addHandler(NullHandler())
-		
+
 		d = {}
 		s_d = settings._wrapped.__dict__
 		for key in settings._wrapped.__dict__:
@@ -40,4 +40,4 @@ class Command(NoArgsCommand):
 				d[key] = copy.copy(val)
 			except Exception as e:
 				logger.error(e)
-		print json.dumps(d, indent=4, sort_keys=True)
+		print(json.dumps(d, indent=4, sort_keys=True))

@@ -3,7 +3,7 @@
 #
 #Licensed under a BSD 3-Clause License. See LICENSE file.
 
-from django.core.management.base import NoArgsCommand, CommandError
+from django.core.management.base import BaseCommand, CommandError
 from django.conf import settings
 from django.template import Template, Context
 from django.core.exceptions import ImproperlyConfigured
@@ -28,11 +28,11 @@ GENERATED_DIR = settings.CONFIG_GEN_GENERATED_DIR
 #logger.debug(GENERATED_DIR)
 CONTEXT_PROCESSORS = settings.CONFIG_GEN_CONTEXT_PROCESSORS
 
-class Command(NoArgsCommand):
+class Command(BaseCommand):
 	help = 'Generates configuration files for Apache, Nginx, etc. using values in settings.py and the Django template system.'
 	ctx = None
 
-	def handle_noargs(self, **options):
+	def handle(self, **options):
 		#get all templates in TEMPLATES_DIR, parse them, and output files in GENERATED_DIR
 		#logging.debug(settings)
 		self.ctx = Context(settings._wrapped.__dict__)
@@ -45,7 +45,7 @@ class Command(NoArgsCommand):
 			module, attr = path[:i], path[i+1:]
 			try:
 				mod = import_module(module)
-			except ImportError, e:
+			except ImportError as e:
 				raise ImproperlyConfigured('Error importing config processor module %s: "%s"' % (module, e))
 			try:
 				func = getattr(mod, attr)
@@ -80,7 +80,7 @@ class Command(NoArgsCommand):
 		t = Template(fi.read())
 		fi.close()
 
-		fo = open(target, 'w')
+		fo = open(target, 'wb')
 		generated_text = t.render(self.ctx).encode('utf-8')
 		fo.write(generated_text)
 		fo.close()

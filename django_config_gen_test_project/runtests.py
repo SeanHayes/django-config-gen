@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import os, sys
-import settings
+from . import settings
 from django.core.management import call_command
 import django
 
