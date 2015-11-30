@@ -127,9 +127,10 @@ INSTALLED_APPS = (
 	# 'django.contrib.admin',
 	# Uncomment the next line to enable admin documentation:
 	# 'django.contrib.admindocs',
-	
+
 	#app that we want to test
 	'django_config_gen',
+    'django_nose',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -154,3 +155,5 @@ LOGGING = {
 		},
 	}
 }
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
