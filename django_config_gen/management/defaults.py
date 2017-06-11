@@ -5,7 +5,7 @@
 
 import os
 
-from django.db import models, transaction
+from django.db import transaction
 
 import __main__
 
@@ -23,5 +23,10 @@ CONTEXT_PROCESSORS = []
 try:
     from django.contrib.sites.models import Site
     HOST = Site.objects.get_current().domain.split(':')[0]
-except (RuntimeError, models.ObjectDoesNotExist):
+except:
+    try:
+        transaction.rollback()
+    except:
+        pass
     HOST = 'localhost'
+
